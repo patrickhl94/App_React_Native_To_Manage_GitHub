@@ -21,15 +21,14 @@ export default class Main extends Component {
       name: response.data.name,
       login: response.data.login,
       bio: response.data.bio,
-      avatar: response.data.avatar,
+      avatar: response.data.avatar_url,
     };
-
-    console.tron.log(data);
 
     this.setState({
       users: [...users, data],
       newUser: '',
     });
+    console.tron.log(data);
   };
 
   render() {

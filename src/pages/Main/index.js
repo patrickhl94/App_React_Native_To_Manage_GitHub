@@ -1,20 +1,64 @@
 import React, {Component} from 'react';
-import {Text} from 'react-native';
+import PropTypes from 'prop-types';
+import {Keyboard, ActivityIndicator} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import api from '../../services/api';
-import {Container, Input, Form, SubmitButton} from './styles';
+import {
+  Container,
+  Input,
+  Form,
+  SubmitButton,
+  List,
+  User,
+  Avatar,
+  Name,
+  Bio,
+  ProfileButton,
+  ProfileButtonText,
+} from './styles';
 
 export default class Main extends Component {
+  static propTypes = {
+    navigation: PropTypes.shape({
+      navigate: PropTypes.func,
+    }).isRequired,
+  };
+
   state = {
     newUser: '',
     users: [],
+    loading: false,
+  };
+
+  async componentDidMount() {
+    console.tron.log('FUNCIONA O TROM');
+    const users = await AsyncStorage.getItem('users');
+
+    if (users) {
+      this.setState({users: JSON.parse(users)});
+    }
+  }
+
+  componentDidUpdate(_, prevState) {
+    const {users} = this.state;
+    if (prevState.users !== users) {
+      AsyncStorage.setItem('users', JSON.stringify(users));
+    }
+  }
+
+  handleNavigate = (user) => {
+    const {navigation} = this.props;
+
+    navigation.navigate('User', {user});
   };
 
   handleAddSubmit = async () => {
     const {newUser, users} = this.state;
 
+    this.setState({loading: true});
     const response = await api.get(`users/${newUser}`);
 
     const data = {
@@ -27,12 +71,14 @@ export default class Main extends Component {
     this.setState({
       users: [...users, data],
       newUser: '',
+      loading: false,
     });
-    console.tron.log(data);
+
+    Keyboard.dismiss();
   };
 
   render() {
-    const {users, newUser} = this.state;
+    const {users, newUser, loading} = this.state;
 
     return (
       <Container>
@@ -46,10 +92,30 @@ export default class Main extends Component {
             returnKeyType="send"
             onSubmitEditing={this.handleAddSubmit}
           />
-          <SubmitButton onPress={this.handleAddSubmit}>
-            <Icon name="add" size={20} color="#fff" />
+          <SubmitButton loading={loading} onPress={this.handleAddSubmit}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Icon name="add" size={20} color="#fff" />
+            )}
           </SubmitButton>
         </Form>
+
+        <List
+          data={users}
+          keyExtractor={(user) => user.login}
+          renderItem={({item}) => (
+            <User>
+              <Avatar source={{uri: item.avatar}} />
+              <Name> {item.name} </Name>
+              <Bio> {item.bio} </Bio>
+
+              <ProfileButton onPress={() => this.handleNavigate(item)}>
+                <ProfileButtonText>Ver Perfil</ProfileButtonText>
+              </ProfileButton>
+            </User>
+          )}
+        />
       </Container>
     );
   }

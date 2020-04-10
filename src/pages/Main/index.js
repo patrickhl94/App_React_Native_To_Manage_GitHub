@@ -34,7 +34,7 @@ export default class Main extends Component {
   };
 
   async componentDidMount() {
-    console.tron.log('FUNCIONA O TROM');
+    console.tron.log('FUNCIONA O TROM3');
     const users = await AsyncStorage.getItem('users');
 
     if (users) {

@@ -21,11 +21,14 @@ export default class User extends Component {
   state = {
     stars: [],
     loading: false,
+    page: 1,
+    refreshing: false,
   };
 
   static propTypes = {
     navigation: PropTypes.shape({
       setOptions: PropTypes.func,
+      navigate: PropTypes.func,
     }).isRequired,
     route: PropTypes.shape({
       params: PropTypes.shape({
@@ -38,17 +41,48 @@ export default class User extends Component {
     this.setState({loading: true});
     const {user} = this.props.route.params;
     const {navigation} = this.props;
+    const {page} = this.state;
     navigation.setOptions({title: user.name});
 
     const response = await api.get(`/users/${user.login}/starred`);
 
-    this.setState({stars: response.data, loading: false});
+    this.setState({stars: response.data, loading: false, page: page + 1});
   }
+
+  handleLoadMore = async () => {
+    const {page, stars} = this.state;
+    const {user} = this.props.route.params;
+
+    const response = await api.get(`/users/${user.login}/starred?page=${page}`);
+
+    if (response.data[0]) {
+      this.setState({
+        stars: [...stars, ...response.data],
+        page: page + 1,
+      });
+    }
+  };
+
+  refreshList = async () => {
+    const {user} = this.props.route.params;
+
+    this.setState({refreshing: true});
+
+    const response = await api.get(`/users/${user.login}/starred`);
+
+    this.setState({stars: response.data, refreshing: false});
+  };
+
+  handleWebView = ({html_url, name}) => {
+    const {navigation} = this.props;
+
+    navigation.navigate('Repository', {html_url, name});
+  };
 
   render() {
     const {stars} = this.state;
     const {user} = this.props.route.params;
-    const {loading} = this.state;
+    const {loading, refreshing} = this.state;
 
     return (
       <Container>
@@ -66,10 +100,14 @@ export default class User extends Component {
           />
         ) : (
           <Stars
+            onRefresh={this.refreshList}
+            refreshing={refreshing}
+            onEndReachedThreshold={0.5}
+            onEndReached={this.handleLoadMore}
             data={stars}
             keyExtractor={(star) => String(star.id)}
             renderItem={({item}) => (
-              <Starred>
+              <Starred onPress={() => this.handleWebView(item)}>
                 <OwnerAvatar source={{uri: item.owner.avatar_url}} />
                 <Info>
                   <Title>{item.name}</Title>

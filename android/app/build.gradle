@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        maven { url 'https://plugins.gradle.org/m2/' } // Gradle Plugin Portal
+    }
+    dependencies {
+        classpath 'gradle.plugin.com.onesignal:onesignal-gradle-plugin:[0.12.1, 0.99.99]'
+    }
+}
+
+apply plugin: 'com.onesignal.androidsdk.onesignal-gradle-plugin'
+
 apply plugin: "com.android.application"
 
 import com.android.build.OutputFile
@@ -153,14 +164,23 @@ android {
     }
     buildTypes {
         debug {
-            signingConfig signingConfigs.debug
+            buildConfigField "String", "CODEPUSH_KEY", '""'
         }
+
+        releaseStaging {
+            buildConfigField "String", "CODEPUSH_KEY", '"sTFbzaPRQ1fI_C-ZU8HrZcDjuXydOsjuC1pLh"'
+
+            matchingFallbacks = ['debug', 'release']
+        }
+
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://facebook.github.io/react-native/docs/signed-apk-android.
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+
+             buildConfigField "String", "CODEPUSH_KEY", '"TKaJkAVmWMsQ2Lo3nxBVmAXLtFeXXaAgGss4K"'
         }
     }
 

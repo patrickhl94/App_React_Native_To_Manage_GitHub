@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import {StatusBar} from 'react-native';
+import 'react-native-get-random-values';
 
 import './config/ReactotroConfig';
 

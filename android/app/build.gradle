@@ -129,7 +129,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.modulo_06"
+        applicationId "com.gitsearch"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
